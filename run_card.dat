@@ -18,12 +18,12 @@
 #*********************************************************************
 # Tag name for the run (one word)                                    *
 #*********************************************************************
-  schannel	= run_tag ! name of the run 
+  tag_1	= run_tag ! name of the run 
 #*********************************************************************
 # Number of events and rnd seed                                      *
 # Warning: Do not generate more than 1M events in a single run       *
 #*********************************************************************
-  10000	= nevents ! Number of unweighted events requested 
+  20000	= nevents ! Number of unweighted events requested 
   0	= iseed ! rnd seed (0=assigned automatically=default))
 #*********************************************************************
 # Collider type and energy                                           *
@@ -32,8 +32,8 @@
 #*********************************************************************
   1	= lpp1 ! beam 1 type 
   1	= lpp2 ! beam 2 type
-  7000.0	= ebeam1 ! beam 1 total energy in GeV
-  7000.0	= ebeam2 ! beam 2 total energy in GeV
+  6500.0	= ebeam1 ! beam 1 total energy in GeV
+  6500.0	= ebeam2 ! beam 2 total energy in GeV
 # To see polarised beam options: type "update beam_pol"
 
 #*********************************************************************
@@ -58,7 +58,25 @@
   False	= gridpack !True = setting up the grid pack
   -1.0	= time_of_flight ! threshold (in mm) below which the invariant livetime is not written (-1 means not written)
   average	= event_norm ! average/sum. Normalization of the weight in the LHEF
-# To see MLM/CKKW  merging options: type "update MLM" or "update CKKW"
+#*********************************************************************
+# Matching parameter (MLM only)
+#*********************************************************************
+  1	= ickkw ! 0 no matching, 1 MLM
+  1.0	= alpsfact ! scale factor for QCD emission vx
+  False	= chcluster ! cluster only according to channel diag
+  5	= asrwgtflavor ! highest quark flavor for a_s reweight
+  True	= auto_ptj_mjj ! Automatic setting of ptj and mjj if xqcut >0
+                                   ! (turn off for VBF and single top processes)
+  100.0	= xqcut ! minimum kt jet measure between partons
+
+#***********************************************************************
+# Turn on either the ktdurham or ptlund cut to activate                *
+# CKKW(L) merging with Pythia8 [arXiv:1410.3012, arXiv:1109.4829]      *
+#***********************************************************************
+  -1.0	= ktdurham 
+  0.4	= dparameter 
+  -1.0	= ptlund 
+  1, 2, 3, 4, 5, 6, 21, 82	= pdgs_for_merging_cut ! PDGs for two cuts above
 
 #*********************************************************************
 #
@@ -89,6 +107,8 @@
 #*********************************************************************
 # Minimum and maximum pt's (for max, -1 means no cut)                *
 #*********************************************************************
+  20.0	= ptj ! minimum pt for the jets 
+  -1.0	= ptjmax ! maximum pt for the jets
   {}	= pt_min_pdg ! pt cut for other particles (use pdg code). Applied on particle and anti-particle
   {}	= pt_max_pdg ! pt cut for other particles (syntax e.g. {6: 100, 25: 50}) 
 #
@@ -97,14 +117,19 @@
 #*********************************************************************
 # Maximum and minimum absolute rapidity (for max, -1 means no cut)   *
 #*********************************************************************
+  5.0	= etaj ! max rap for the jets 
   {}	= eta_min_pdg ! rap cut for other particles (use pdg code). Applied on particle and anti-particle
   {}	= eta_max_pdg ! rap cut for other particles (syntax e.g. {6: 2.5, 23: 5})
 #*********************************************************************
 # Minimum and maximum DeltaR distance                                *
 #*********************************************************************
+  0.0	= drjj ! min distance between jets 
+  -1.0	= drjjmax ! max distance between jets
 #*********************************************************************
 # Minimum and maximum invariant mass for pairs                       *
 #*********************************************************************
+  0.0	= mmjj ! min invariant mass of a jet pair 
+  -1.0	= mmjjmax ! max invariant mass of a jet pair
   {}	= mxx_min_pdg ! min invariant mass of a pair of particles X/X~ (e.g. {6:250})
   {'default': False}	= mxx_only_part_antipart ! if True the invariant mass is applied only 
                        ! to pairs of particle/antiparticle and not to pairs of the same pdg codes.  
@@ -112,6 +137,27 @@
 # Inclusive cuts                                                     *
 #*********************************************************************
   0.0	= ptheavy ! minimum pt for at least one heavy final state
+  0.0	= xptj ! minimum pt for at least one jet  
+ #*********************************************************************
+ # Control the pt's of the jets sorted by pt                          *
+ #*********************************************************************
+  0.0	= ptj1min ! minimum pt for the leading jet in pt
+  0.0	= ptj2min ! minimum pt for the second jet in pt
+  -1.0	= ptj1max ! maximum pt for the leading jet in pt 
+  -1.0	= ptj2max ! maximum pt for the second jet in pt
+  0	= cutuse ! reject event if fails any (0) / all (1) jet pt cuts
+ #*********************************************************************
+ # Control the Ht(k)=Sum of k leading jets                            *
+ #*********************************************************************
+  0.0	= htjmin ! minimum jet HT=Sum(jet pt)
+  -1.0	= htjmax ! maximum jet HT=Sum(jet pt)
+  0.0	= ihtmin !inclusive Ht for all partons (including b)
+  -1.0	= ihtmax !inclusive Ht for all partons (including b)
+ #*********************************************************************
+ # WBF cuts                                                           *
+ #*********************************************************************
+  0.0	= xetamin ! minimum rapidity for two jets in the WBF case  
+  0.0	= deltaeta ! minimum rapidity for two jets in the WBF case 
 #*********************************************************************
 # maximal pdg code for quark to be considered as a light jet         *
 # (otherwise b cuts are applied)                                     *
@@ -126,9 +172,8 @@
   True	= use_syst ! Enable systematics studies
 #
   systematics	= systematics_program ! none, systematics [python], SysCalc [depreceted, C++]
-['--mur=0.5,1,2', '--muf=0.5,1,2', '--pdf=errorset'] = systematics_arguments ! see: https://cp3.irmp.ucl.ac.be/projects/madgraph/wiki/Systematics#Systematicspythonmodule
+['--mur=0.5,1,2', '--muf=0.5,1,2', '--pdf=errorset', '--alps=0.5,1,2'] = systematics_arguments ! see: https://cp3.irmp.ucl.ac.be/projects/madgraph/wiki/Systematics#Systematicspythonmodule
 # Syscalc is deprecated but to see the associate options type'update syscalc'#********************************************************************* 
 #  Additional hidden parameters
 #*********************************************************************
-  2.5	= etaj # hidden_parameter
-  ['--mur=0.5,1,2', '--muf=0.5,1,2', '--pdf=errorset']	= systematics_arguments # Choose the argment to pass to the systematics command. like --mur=0.25,1,4. Look at the help of the systematics function for more details.
+  ['--mur=0.5,1,2', '--muf=0.5,1,2', '--pdf=errorset', '--alps=0.5,1,2']	= systematics_arguments # Choose the argment to pass to the systematics command. like --mur=0.25,1,4. Look at the help of the systematics function for more details.
