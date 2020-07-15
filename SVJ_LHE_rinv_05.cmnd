@@ -16,16 +16,16 @@ Next:numberShowEvent = 0           ! print event record n times
 
 
 ! Matching
-JetMatching:qCut         = 100
-JetMatching:doShowerKt   = off
-JetMatching:nJetMax      = 2
-JetMatching:setMad=off
-JetMatching:nQmatch=5
-JetMatching:etaJetMax=5
-JetMatching:coneRadius=1.0000000000e+00
-JetMatching:merge=on
-JetMatching:doVeto=off
-JetMatching:scheme=1
+!JetMatching:qCut         = 100
+!JetMatching:doShowerKt   = off
+!JetMatching:nJetMax      = 2
+!JetMatching:setMad=off
+!JetMatching:nQmatch=5
+!JetMatching:etaJetMax=5
+!JetMatching:coneRadius=1.0000000000e+00
+!JetMatching:merge=on
+!JetMatching:doVeto=off
+!JetMatching:scheme=1
 
 
 
