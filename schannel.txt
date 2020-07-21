@@ -1,14 +1,14 @@
 import model DMsimp_s_spin1
-define j = g u c t d b s g u~ c~ t~ d~ b~ s~
-generate p p > xd xd~ @0
-add process p p > xd xd~ j @1
-add process p p > xd xd~ j j @2
+define j = g u c d b t s u~ c~ d~ b~ s~ t~
+generate p p > xd xd~ 
+add process p p > xd xd~ j 
+add process p p > xd xd~ j j 
 
 
-output /home/james/sig_schannel/sig_schannel_2
+output /home/james/sig_schannel/Nowidth_sig_schannel_2
 #output /home/james/sig_schannel/test
 
-launch /home/james/sig_schannel/sig_schannel_2
+launch /home/james/sig_schannel/Nowidth_sig_schannel_2
 #launch /home/james/sig_schannel/test
 set xqcut 100
 set nevents 20000
@@ -17,12 +17,13 @@ set run_card ebeam2 6500.0
 #set run_card etaj 2.5
 set MXd 10
 set MY1 1500
+set gcxd 1.000000e+00
 set gvd11 1.000000e-01 
 set gvu11 1.000000e-01 
 set gvd22 1.000000e-01 
 set gvu22 1.000000e-01 
 set gvd33 1.000000e-01 
 set gvu33 1.000000e-01 
-
+#set decay 5000001 auto
 
 

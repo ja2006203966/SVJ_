@@ -1,0 +1,21 @@
+#define j = g u d s u~ d~ s~ 
+define j = g u d s u~ d~ s~ 
+define q = u d s
+define q~ = u~ d~ s~
+generate p p > j j 
+#add process p p > xd xd~ j 
+#add process p p > xd xd~ j j 
+
+output /home/james/Dijet/jj
+
+launch /home/james/Dijet/jj
+
+
+set nevents 20000
+#set pt_min_pdg {1: 450, 2: 450, 3:450}
+set ptj 450
+set run_card ebeam1 6500.0
+set run_card ebeam2 6500.0
+#set run_card etaj 2.5
+
+
