@@ -116,7 +116,7 @@ def jet_trimmer(event, R0, R1, pt_cut):
     sequence = cluster(flattened_event, R=R0, p=-1)
 
     # Main jets
-    jets = sequence.inclusive_jets(ptmin=300)
+    jets = sequence.inclusive_jets()
 #     print("check")
     # In case we are missing a leading jet, break early
     if len(jets) == 0:
@@ -258,10 +258,11 @@ def jet_trimmer_1J(event, R0, R1, pt_cut):
     flattened_event = flatten(event)
     sequence = cluster(flattened_event, R=R0, p=-1)
     # Main jets
-    jets = sequence.inclusive_jets(ptmin=300)
+    jets = sequence.inclusive_jets()
     # In case we are missing a leading jet, break early
     if len(jets) == 0:
         return jets
+    
 
     # Take just the leading jet
     jet0 = jets[0]
@@ -273,23 +274,31 @@ def jet_trimmer_1J(event, R0, R1, pt_cut):
     # Grab the subjets by clustering with R1
     subjets = cluster(jet0.constituents_array(), R=R1, p=1)
     subjet_array = subjets.inclusive_jets()
+    j0 = []
     if (subjet_array[0].pt >= jet0_cut):
-        j0 = subjet_array[0].constituents_array()
+#         j0 = subjet_array[0].constituents_array()
         for ij, subjet in enumerate(subjet_array):
-            if (ij == 0):
-                pass
+#             if (ij == 0):
+#                 continue
             if subjet.pt < jet0_cut:
                 # subjet doesn't meet the percentage cut on the original jet pT
-                pass
+                continue
             if subjet.pt >= jet0_cut:
                 # Get the subjets pt, eta, phi constituents
                 subjet_data = subjet.constituents_array()
-                j0 = np.append(j0, subjet_data)
+                j0.append(subjet_data)
+#                 j0 = np.append(j0, subjet_data)
     else:
         j0 = subjet_array[0].constituents_array()*0
-    sequence = cluster(j0, R=R0, p=-1)
-    j0 = sequence.inclusive_jets(ptmin=300)
-    return j0
+    jet = j0[0]
+    for i, subjet in enumerate(j0):
+        if i==0 :
+            continue
+        jet = np.append(jet, subjet)
+        
+    sequence = cluster(jet, R=R0, p=-1)
+    jet = sequence.inclusive_jets()
+    return jet
 
 def jet_clustering(event, R0):
     # R0 = Clustering radius for the main jets
@@ -427,6 +436,103 @@ def calc_KtDeltaR(jet):
 
     return CalcDeltaR(subjets[0], subjets[1])
 
+#---------------------my im-----------------------------------
+def myrotate(x, y, a):
+    xp = x * np.cos(a) + y * np.sin(a)
+    yp = y * np.cos(a) - x * np.sin(a)
+    return xp, yp
+def root_2_jetim(root_file):
+    # Takes root_file as produces a jet-image
+#     events = root2array(root_file, "Delphes;1", branches=[
+#         "Tower.ET", "Tower.Eta", "Tower.Phi", "Tower.E"])
+
+    file = uproot.open(root_file)
+    events = np.array([np.array(file["Delphes;1"]["Tower.ET"].array()), #assum E>>m
+                       np.array(file["Delphes;1"]["Tower.Eta"].array()),
+                       np.array(file["Delphes;1"]["Tower.Phi"].array()),
+                       np.array(file["Delphes;1"]["Tower.E"].array())*0   #assume m<<1
+                      ])
+    events = np.expand_dims(events, axis=-1)
+    events = events.transpose((1,0,2))
+    events = np.squeeze(events,axis=(2,))
+
+    jet_images = []
+    for ix, event in enumerate(tqdm(events)):
+        # create trimmed jet event (also centered and rotated)
+        event = event2image(event=event, R0=1.2, R1=0.2, pt_cut=0.03) #paper setting
+        
+
+        # pixelize the trimmed jet
+        jet_image = pixelize(event)
+
+        # include jet-image as long as it isn't blank
+        # blank jets occur only if the event fails a cut
+        # during trimming
+        if np.sum(jet_image) != 0:
+            jet_images.append(jet_image)
+            
+    return jet_images
+def event2image(event, R0, R1, pt_cut,ptmin=300,ptmax=400):
+    # R0 = Clustering radius for the main jets
+    # R1 = Clustering radius for the subjets in the primary jet
+    # pt_cut = Threshold for subjets (relative to the primary jet it's a subjet of)
+
+    trijet = jet_trimmer_1J(event, R0, R1, pt_cut)
+    if (len(trijet) < 1):
+        return np.zeros(1), np.zeros(1), np.zeros(1), np.zeros(1)
+    # Take just the leading jet
+    jet0 = trijet[0]
+    jc = jet0.constituents_array()
+    if (jet0.pt < ptmin)or(jet0.pt>ptmax):
+        return np.zeros(1), np.zeros(1), np.zeros(1), np.zeros(1)
+
+    theta = np.arctan(get_tan(jet0))
+#     if theta < 0.0:
+#         theta += 2*np.pi
+#     eta, phi = rotate(jc['eta'], jc['phi'], np.pi - theta)
+    eta, phi = myrotate(jc['eta']-jet0.eta, deltaPhi_np(jc['phi'],jet0.phi), theta)
+
+    # Collect the trimmed subjet constituents
+#     trim_pt.append(pT)
+#     trim_eta.append(eta)
+#     trim_phi.append(phi)
+#     trim_mass.append(mass)
+    return [jc['pT'], eta, phi, jc['mass']]
+def get_tan(jet): ## input one jet
+    jc = jet.constituents_array() #leading jet
+    jp = p_pteta(jc['pT'],jc['eta'])
+    jE = (jp**2+jc['mass']**2)**0.5
+    delphi = deltaPhi_np(jc['phi'],jet.phi)
+    deleta = jc['eta']-jet.eta
+    delR = (delphi**2+deleta**2)**0.5
+    if sum(delR) ==0:
+        return 0
+    sumx = np.sum(np.select([delR>0],[deleta*jE/delR]) )
+    sumy = np.sum(np.select([delR>0],[delphi*jE/delR]) )
+#     sumx = np.sum(deleta*jE/delR )
+#     sumy = np.sum(delphi*jE/delR )
+
+
+#     if sumx == 0:
+#         print("smx ==0")
+#         if sumy == 0:
+#             print("all==0")
+#             return 0
+#         else:
+#             return np.sign(sumy)*np.Inf
+    
+#     if sumx!=0 :
+    return sumy/sumx
+    
+def p_pteta(pt,eta): #np.array
+    return pt*np.cosh(eta)
+
+def deltaPhi_np(phi1,phi2):
+    x = phi1-phi2
+    x = x - (x>=np.pi).astype(np.int)*np.pi*2
+    x = x + (x<-np.pi).astype(np.int)*np.pi*2
+    return x  
+
 #=======================================================================================================
 import sys
 nevent = int(sys.argv[1]) # N of events
@@ -509,11 +615,12 @@ events = events.transpose((1,0,2))
 events = np.squeeze(events,axis=(2,))
 
 jss = JSS_V(events)
-
-outfile = outpath + 'JSS.h5' # output jetim .h5 file 
+j_im_my = root_2_jetim(inputfile)
+outfile = outpath + 'JSS_Jim.h5' # output jetim .h5 file 
 hf = h5py.File(outfile, 'w')
 for key in jss.keys():
     hf.create_dataset(key, data=jss[key])
+hf.create_dataset('Jet_im_my', data=j_im_my)
 hf.close()
 
 
