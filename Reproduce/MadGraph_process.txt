@@ -1,0 +1,23 @@
+import model DMsimp_s_spin1 
+define p = u d u~ d~  
+generate p p > xd xd~  
+output /home/james/LHE_test/data/SVJ/Z3000/0 
+ 
+launch /home/james/LHE_test/data/SVJ/Z3000/0 
+set iseed 1000 
+set nevents 25000 
+set pt_min_pdg {5000521: 0} 
+set run_card ebeam1 7000.0 
+set run_card ebeam2 7000.0
+set pdlabel lhapdf 
+set lhaid 10000 
+set ickkw 1 
+set MXd 20
+set MY1 3000
+set gcxd 1.000000e+00 
+set gvd11 0.08619 
+set gvu11 0.08619 
+set gvd22 0.08619 
+set gvu22 0.08619 
+set gvd33 0.08619 
+set gvu33 0.08619 
