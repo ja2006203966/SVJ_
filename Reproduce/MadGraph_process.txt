@@ -1,23 +1,41 @@
+set group_subprocesses Auto 
+set ignore_six_quark_processes False 
+set loop_optimized_output True 
+set loop_color_flows False 
+set gauge unitary 
+set complex_mass_scheme False 
+set max_npoint_for_channel 0 
+import model sm 
+define p = g u c d s u~ c~ d~ s~ 
+define j = g u c d s u~ c~ d~ s~  
+define l+ = e+ mu+ 
+define l- = e- mu- 
+define vl = ve vm vt 
+define vl~ = ve~ vm~ vt~ 
 import model DMsimp_s_spin1 
-define p = u d u~ d~  
-generate p p > xd xd~  
-output /home/james/LHE_test/data/SVJ/Z3000/0 
+define jj = g u c t d b s 
+define jj~ = g u~ c~ t~  d~ b~ s~ 
+generate p p > xd xd~ 
+add process p p > xd xd~ jj 
+add process p p > xd xd~ jj jj~ 
+output /home/james/LHE_test/data/SVJ/Z1500/1 
  
-launch /home/james/LHE_test/data/SVJ/Z3000/0 
-set iseed 1000 
-set nevents 25000 
-set pt_min_pdg {5000521: 0} 
-set run_card ebeam1 7000.0 
-set run_card ebeam2 7000.0
-set pdlabel lhapdf 
-set lhaid 10000 
+launch /home/james/LHE_test/data/SVJ/Z1500/1 
+set iseed 2000 
+set nevents 30000 
+set pt_min_pdg {5000521: 250} 
+set run_card ebeam1 6500.0 
+set run_card ebeam2 6500.0
+set pdlabel nn23lo1 
 set ickkw 1 
-set MXd 20
-set MY1 3000
-set gcxd 1.000000e+00 
-set gvd11 0.08619 
-set gvu11 0.08619 
-set gvd22 0.08619 
-set gvu22 0.08619 
-set gvd33 0.08619 
-set gvu33 0.08619 
+set xqcut 100 
+set ptj 50 
+set MXd 10
+set MY1 1500
+set gcxd 2.000000e+00 
+set gvd11 1.000000e-01 
+set gvu11 1.000000e-01 
+set gvd22 1.000000e-01 
+set gvu22 1.000000e-01 
+set gvd33 1.000000e-01 
+set gvu33 1.000000e-01 
