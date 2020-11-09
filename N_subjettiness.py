@@ -111,8 +111,8 @@ def generate_NSJ(file_path, NUM_Ev= None): # NUM_Ev= number of events you choose
     if NUM_Ev == None:
         NUM_Ev = len(df.iloc[:])
     for i in tqdm(range(NUM_Ev)):
-        if y.iloc[i].values[0] == 1:
-            continue
+#         if y.iloc[i].values[0] == 1:
+#             continue
         event = df.iloc[i].values[0]        
         NSJ.append(T21(event))
     return(NSJ)
